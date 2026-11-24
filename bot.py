@@ -191,6 +191,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply = await ask_gemini(chat.id, user_text)
     except Exception as e:
         log.error("Gemini error: %s (code=%s, status=%s)", type(e).__name__, getattr(e, "code", None), getattr(e, "status", None))
+        if str(getattr(e, "code", "")) == "400":
+            detail = str(getattr(e, "message", "") or e).lower()
+            checks = {
+                "api_key": ("api key", "api_key_invalid"),
+                "location": ("location", "region", "country"),
+                "system_instruction": ("system instruction", "system_instruction", "systeminstruction", "developer instruction"),
+                "model_or_api_version": ("model", "api version", "generatecontent"),
+                "contents_or_roles": ("contents", "role", "parts"),
+                "generation_config": ("generationconfig", "generation_config", "thinking", "temperature", "max_output_tokens"),
+                "billing": ("billing", "paid tier"),
+            }
+            hints = [label for label, words in checks.items() if any(word in detail for word in words)]
+            log.error("Gemini diagnostic: model_is_expected=%s; hints=%s", GEMINI_MODEL == "gemini-3.1-flash-lite", ",".join(hints) or "unknown")
         reply = "Oops! Thodi der baad try karo na 😅"
 
     # Jawab bhejo (text + voice, setting ke hisaab se)
