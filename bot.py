@@ -73,13 +73,13 @@ def get_history(chat_id: int) -> list:
 async def ask_gemini(chat_id: int, user_text: str) -> str:
     """User ka message history me daal kar Gemini se jawab mangta hai."""
     history = get_history(chat_id)
-    history.append({"role": "user", "text": user_text})
+    pending = {"role": "user", "text": user_text}
 
     contents = [
         genai_types.Content(
             role=m["role"], parts=[genai_types.Part(text=m["text"])]
         )
-        for m in history[-MAX_HISTORY:]
+        for m in [*history[-(MAX_HISTORY // 2 * 2):], pending]
     ]
 
     def _call():
@@ -88,8 +88,6 @@ async def ask_gemini(chat_id: int, user_text: str) -> str:
             contents=contents,
             config=genai_types.GenerateContentConfig(
                 system_instruction=PERSONA,
-                temperature=0.85,
-                max_output_tokens=400,
             ),
         )
         return (resp.text or "").strip()
@@ -97,7 +95,8 @@ async def ask_gemini(chat_id: int, user_text: str) -> str:
     reply = await asyncio.to_thread(_call)
     if not reply:
         reply = "Sorry, abhi samajh nahi aaya 😅 thoda phir se bolo na?"
-    history.append({"role": "model", "text": reply})
+    history.extend([pending, {"role": "model", "text": reply}])
+    del history[:-MAX_HISTORY]
     return reply
 
 
