@@ -32,6 +32,8 @@ logging.basicConfig(
     format="%(asctime)s | %(levelname)s | %(message)s",
     level=logging.INFO,
 )
+logging.getLogger("httpx").setLevel(logging.CRITICAL)
+logging.getLogger("httpcore").setLevel(logging.CRITICAL)
 log = logging.getLogger("adya")
 
 # ---------------- Settings (.env se aate hain) ----------------
@@ -189,7 +191,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         reply = await ask_gemini(chat.id, user_text)
     except Exception as e:
-        log.error(f"Gemini error: {e}")
+        log.error("Gemini error: %s (code=%s, status=%s)", type(e).__name__, getattr(e, "code", None), getattr(e, "status", None))
         reply = "Oops! Thodi der baad try karo na 😅"
 
     # Jawab bhejo (text + voice, setting ke hisaab se)
