@@ -39,7 +39,8 @@ log = logging.getLogger("adya")
 # ---------------- Settings (.env se aate hain) ----------------
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+GEMINI_MODEL = "gemini-3.1-flash-lite"
+log.info("Gemini model selected: %s", GEMINI_MODEL)
 
 VOICE_ENABLED = os.getenv("VOICE_ENABLED", "false").lower() in ("1", "true", "yes")
 VOICE_NAME = os.getenv("VOICE_NAME", "hi-IN-SwaraNeural")  # sweet female Indian voice
